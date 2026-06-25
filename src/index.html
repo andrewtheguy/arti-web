@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Restricted — Arti Onion POC</title>
+<style>
+  :root { color-scheme: dark; }
+  body {
+    margin: 0; min-height: 100vh; display: grid; place-items: center;
+    font: 16px/1.5 system-ui, sans-serif; background: #14131a; color: #e7e5ee;
+  }
+  .card {
+    width: min(92vw, 580px); background: #1e1c27; border: 1px solid #322f40;
+    border-radius: 14px; padding: 28px 30px; box-shadow: 0 12px 40px rgba(0,0,0,.4);
+  }
+  .top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+  h1 { margin: 0 0 4px; font-size: 21px; }
+  .who { color: #9a96ad; font-size: 14px; }
+  .who b { color: #c7b8ff; }
+  .sub { margin: 4px 0 20px; color: #9a96ad; font-size: 14px; }
+  button {
+    appearance: none; border: 0; border-radius: 9px; cursor: pointer;
+    background: #7c5cff; color: #fff; font-size: 15px; font-weight: 600; padding: 10px 16px;
+  }
+  button:disabled { opacity: .5; cursor: progress; }
+  .logout button { background: #322f40; color: #e7e5ee; padding: 7px 12px; font-size: 13px; }
+  .out {
+    margin-top: 18px; padding: 14px 16px; border-radius: 9px;
+    background: #14131a; border: 1px solid #322f40;
+    font-family: ui-monospace, monospace; font-size: 13px; white-space: pre-wrap;
+  }
+  .ok { color: #5ce08a; } .err { color: #ff6b6b; }
+  .gated { margin-top: 22px; padding-top: 18px; border-top: 1px solid #322f40; }
+  noscript { color: #9a96ad; font-size: 13px; }
+</style>
+</head>
+<body>
+  <div class="card">
+    <div class="top">
+      <div>
+        <h1>🔓 Restricted content</h1>
+        <div class="who">Signed in as <b>__USERNAME__</b></div>
+      </div>
+      <form class="logout" method="POST" action="/logout">
+        <button type="submit">Log out</button>
+      </form>
+    </div>
+    <p class="sub">You authenticated with a regular login form over a Tor onion service.
+      This page is reachable only via Tor (no local socket is exposed).</p>
+
+    <p>🔐 Secret material for authenticated users only: <code>flag&#123;tor-auth-poc-ok&#125;</code></p>
+
+    <div class="gated">
+      <button id="btn">Call gated API (/api/ping)</button>
+      <div class="out" id="out">Loading…</div>
+      <noscript>JavaScript is disabled (e.g. Tor Browser "Safest"). The content above
+        still works — only the live API demo below requires JS.</noscript>
+    </div>
+  </div>
+
+<script>
+  const out = document.getElementById('out');
+  const btn = document.getElementById('btn');
+
+  async function ping() {
+    btn.disabled = true;
+    out.className = 'out';
+    out.textContent = 'Requesting /api/ping …';
+    try {
+      const t0 = performance.now();
+      const res = await fetch('/api/ping', { cache: 'no-store' });
+      const data = await res.json();
+      const ms = Math.round(performance.now() - t0);
+      if (res.ok) {
+        out.className = 'out ok';
+        out.textContent = '✓ Authenticated AJAX call OK (' + ms + ' ms over Tor)\n\n'
+          + JSON.stringify(data, null, 2);
+      } else {
+        out.className = 'out err';
+        out.textContent = '✗ ' + res.status + ' — ' + JSON.stringify(data);
+      }
+    } catch (e) {
+      out.className = 'out err';
+      out.textContent = '✗ Request failed: ' + e;
+    } finally {
+      btn.disabled = false;
+    }
+  }
+
+  btn.addEventListener('click', ping);
+  ping(); // fire once on load to prove JS + AJAX + session cookie all work
+</script>
+</body>
+</html>
