@@ -4,3 +4,23 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# Tor / Arti — same versions & feature pattern as ../beam-rs
+arti-client   = { version = "0.43", features = ["onion-service-service", "tokio", "static-sqlite"] }
+tor-hsservice = "0.43"
+tor-cell      = "0.43"
+safelog       = "0.8"
+
+# Async runtime + stream utils
+tokio   = { version = "1", features = ["full"] }
+futures = "0.3"
+
+# HTTP server over the raw Tor stream
+hyper          = { version = "1", features = ["server", "http1"] }
+hyper-util     = { version = "0.1", features = ["tokio"] }
+http-body-util = "0.1"
+
+# Misc
+anyhow             = "1"
+tempfile           = "3"
+tracing            = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
