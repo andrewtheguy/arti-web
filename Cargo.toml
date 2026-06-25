@@ -19,8 +19,11 @@ hyper          = { version = "1", features = ["server", "http1"] }
 hyper-util     = { version = "0.1", features = ["tokio"] }
 http-body-util = "0.1"
 
+# Auth: password hashing + cryptographic randomness for session tokens
+argon2 = "0.5"
+rand   = "0.8"
+
 # Misc
 anyhow             = "1"
-tempfile           = "3"
 tracing            = "0.1"
 tracing-subscriber = { version = "0.3", features = ["env-filter"] }

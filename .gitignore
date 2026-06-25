@@ -1,1 +1,3 @@
 /target
+# Persistent Tor state incl. the onion-service identity key — never commit.
+/arti-web-data
