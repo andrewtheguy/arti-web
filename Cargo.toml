@@ -23,6 +23,9 @@ http-body-util = "0.1"
 argon2 = "0.5"
 rand   = "0.8"
 
+# CLI
+clap = { version = "4", features = ["derive", "env"] }
+
 # Misc
 anyhow             = "1"
 tracing            = "0.1"
