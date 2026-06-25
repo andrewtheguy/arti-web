@@ -44,7 +44,7 @@ use tor_hsservice::{config::OnionServiceConfigBuilder, handle_rend_requests};
 #[derive(Args, Debug)]
 pub struct ServeArgs {
     /// Directory for persistent Tor state + the onion identity key.
-    #[arg(long, env = "ARTI_WEB_DATA_DIR", default_value = "arti-web-data")]
+    #[arg(long, env = "ARTI_WEB_POC_DATA_DIR", default_value = "arti-web-poc-data")]
     data_dir: PathBuf,
 
     /// Onion-service nickname = keystore namespace. Changing it mints a NEW

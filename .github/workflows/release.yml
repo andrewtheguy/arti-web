@@ -102,12 +102,12 @@ jobs:
 
       - name: Rename Binaries
         run: |
-          mv target/${{ matrix.target }}/release/arti-web target/release/arti-web-${{ matrix.suffix }}
+          mv target/${{ matrix.target }}/release/arti-web-poc target/release/arti-web-poc-${{ matrix.suffix }}
 
       - uses: actions/upload-artifact@v4
         with:
           name: release-${{ matrix.suffix }}
-          path: target/release/arti-web-${{ matrix.suffix }}
+          path: target/release/arti-web-poc-${{ matrix.suffix }}
 
   build-macos:
     needs: setup
@@ -123,12 +123,12 @@ jobs:
 
       - name: Rename Binaries
         run: |
-          mv target/aarch64-apple-darwin/release/arti-web target/release/arti-web-macos-arm64
+          mv target/aarch64-apple-darwin/release/arti-web-poc target/release/arti-web-poc-macos-arm64
 
       - uses: actions/upload-artifact@v4
         with:
           name: release-macos-arm64
-          path: target/release/arti-web-macos-arm64
+          path: target/release/arti-web-poc-macos-arm64
 
   build-windows:
     needs: setup
@@ -145,12 +145,12 @@ jobs:
 
       - name: Rename Binaries
         run: |
-          move target\x86_64-pc-windows-msvc\release\arti-web.exe target\release\arti-web-windows-amd64.exe
+          move target\x86_64-pc-windows-msvc\release\arti-web-poc.exe target\release\arti-web-poc-windows-amd64.exe
 
       - uses: actions/upload-artifact@v4
         with:
           name: release-windows-amd64
-          path: target/release/arti-web-windows-amd64.exe
+          path: target/release/arti-web-poc-windows-amd64.exe
 
   publish-release:
     needs: [setup, build-linux, build-macos, build-windows]

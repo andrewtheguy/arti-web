@@ -1,5 +1,5 @@
 [package]
-name = "arti-web"
+name = "arti-web-poc"
 version = "0.0.1"
 edition = "2024"
 

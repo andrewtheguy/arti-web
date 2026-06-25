@@ -1,9 +1,9 @@
-//! arti-web — a Tor onion service POC with two roles in one binary:
+//! arti-web-poc — a Tor onion service POC with two roles in one binary:
 //!
-//!   arti-web serve            run the auth-gated onion service (host; no local socket)
-//!   arti-web tunnel <onion>   forward a remote onion to a local port (client)
+//!   arti-web-poc serve            run the auth-gated onion service (host; no local socket)
+//!   arti-web-poc tunnel <onion>   forward a remote onion to a local port (client)
 //!
-//! See `arti-web --help` / `arti-web <cmd> --help` for options.
+//! See `arti-web-poc --help` / `arti-web-poc <cmd> --help` for options.
 
 mod server;
 mod tunnel;
@@ -12,7 +12,7 @@ use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 #[derive(Parser)]
-#[command(name = "arti-web", about = "Tor onion service POC (serve + tunnel)")]
+#[command(name = "arti-web-poc", about = "Tor onion service POC (serve + tunnel)")]
 struct Cli {
     #[command(subcommand)]
     command: Command,

@@ -1,4 +1,4 @@
-# arti-web
+# arti-web-poc
 
 A proof-of-concept **Tor onion (hidden) service in pure Rust**, built on
 [Arti](https://gitlab.torproject.org/tpo/core/arti). It serves an
@@ -9,8 +9,8 @@ Two roles, one binary:
 
 | Command | Role | Local socket? |
 |---|---|---|
-| `arti-web serve` | Host the auth-gated onion service | **No** — ingress is only via the Tor rendezvous |
-| `arti-web tunnel <onion>` | Forward a remote onion to `127.0.0.1:<port>` | Yes — a loopback listener (client side) |
+| `arti-web-poc serve` | Host the auth-gated onion service | **No** — ingress is only via the Tor rendezvous |
+| `arti-web-poc tunnel <onion>` | Forward a remote onion to `127.0.0.1:<port>` | Yes — a loopback listener (client side) |
 
 ## Why it looks the way it does
 
@@ -45,8 +45,8 @@ cargo build            # first build is slow: it compiles Arti + a static sqlite
 ```bash
 RUST_LOG=info cargo run -- serve
 # options:
-#   --data-dir <PATH>   persistent state + onion key   [env: ARTI_WEB_DATA_DIR]
-#                                                       [default: arti-web-data]
+#   --data-dir <PATH>   persistent state + onion key   [env: ARTI_WEB_POC_DATA_DIR]
+#                                                       [default: arti-web-poc-data]
 #   --nickname <NAME>   keystore namespace; changing it mints a NEW address
 #                                                       [default: arti-web-poc]
 ```
@@ -102,10 +102,10 @@ curl http://127.0.0.1:8080/login        # or point a normal browser at it
     the cookie manually or drop `Secure` from `COOKIE_ATTRS` in `src/server.rs`
     (the loopback hop is local-only; the Tor hop is encrypted regardless).
 - **The onion key is the identity.** It lives at
-  `arti-web-data/state/keystore/hss/<nickname>/ks_hs_id.ed25519_expanded_private`.
+  `arti-web-poc-data/state/keystore/hss/<nickname>/ks_hs_id.ed25519_expanded_private`.
   The data dirs are created `0700`, Arti's `fs-mistrust` checks are left **on**,
-  and `arti-web-data/` is git-ignored. Anyone who copies that key can impersonate
-  your service. To rotate to a fresh address, delete `arti-web-data/`.
+  and `arti-web-poc-data/` is git-ignored. Anyone who copies that key can impersonate
+  your service. To rotate to a fresh address, delete `arti-web-poc-data/`.
 - **`tunnel` reverses the "no local socket" property** — that's its job. It binds
   loopback only; never bind it to `0.0.0.0`. At that point the login is your
   access control.
