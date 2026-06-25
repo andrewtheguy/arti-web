@@ -28,8 +28,8 @@ use arti_client::{TorClient, config::TorClientConfigBuilder};
 use clap::Args;
 use futures::StreamExt;
 use http_body_util::{BodyExt, Full};
-use hyper::body::{Bytes, Incoming};
-use hyper::header::{CONTENT_TYPE, COOKIE, LOCATION, SET_COOKIE};
+use hyper::body::{Body, Bytes, Incoming};
+use hyper::header::{CACHE_CONTROL, CONTENT_TYPE, COOKIE, LOCATION, SET_COOKIE};
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper::{Method, Request, Response, StatusCode};
@@ -61,6 +61,7 @@ const RESTRICTED_HTML: &str = include_str!("index.html");
 /// context. `SameSite=Strict` blocks cross-site requests (CSRF). Note: non-browser
 /// clients like curl won't replay a `Secure` cookie over plain http.
 const COOKIE_ATTRS: &str = "HttpOnly; SameSite=Strict; Secure; Path=/";
+const MAX_LOGIN_BODY_BYTES: u64 = 8 * 1024;
 
 static PING_COUNT: AtomicUsize = AtomicUsize::new(0);
 
@@ -223,6 +224,13 @@ async fn handle(
 
         // Process login.
         (&Method::POST, "/login") => {
+            if !login_body_within_limit(&req) {
+                return Ok(html(
+                    StatusCode::PAYLOAD_TOO_LARGE,
+                    "<h1>413 payload too large</h1>".to_string(),
+                ));
+            }
+
             let form = parse_form(&collect_body(req).await);
             let user = form.get("username").map(String::as_str).unwrap_or("");
             let pass = form.get("password").map(String::as_str).unwrap_or("");
@@ -281,6 +289,7 @@ async fn handle(
 fn html(status: StatusCode, body: String) -> Response<Full<Bytes>> {
     Response::builder()
         .status(status)
+        .header(CACHE_CONTROL, "no-store")
         .header(CONTENT_TYPE, "text/html; charset=utf-8")
         .body(Full::new(Bytes::from(body)))
         .unwrap()
@@ -289,6 +298,7 @@ fn html(status: StatusCode, body: String) -> Response<Full<Bytes>> {
 fn json(status: StatusCode, body: String) -> Response<Full<Bytes>> {
     Response::builder()
         .status(status)
+        .header(CACHE_CONTROL, "no-store")
         .header(CONTENT_TYPE, "application/json")
         .body(Full::new(Bytes::from(body)))
         .unwrap()
@@ -298,6 +308,7 @@ fn json(status: StatusCode, body: String) -> Response<Full<Bytes>> {
 fn redirect(location: &str, cookie: Option<&str>) -> Response<Full<Bytes>> {
     let mut b = Response::builder()
         .status(StatusCode::SEE_OTHER)
+        .header(CACHE_CONTROL, "no-store")
         .header(LOCATION, location);
     if let Some(c) = cookie {
         b = b.header(SET_COOKIE, c);
@@ -350,6 +361,13 @@ fn session_token(headers: &hyper::HeaderMap) -> Option<String> {
     cookies
         .split(';')
         .find_map(|c| c.trim().strip_prefix("session=").map(str::to_string))
+}
+
+fn login_body_within_limit(req: &Request<Incoming>) -> bool {
+    matches!(
+        req.body().size_hint().upper(),
+        Some(size) if size <= MAX_LOGIN_BODY_BYTES
+    )
 }
 
 async fn collect_body(req: Request<Incoming>) -> String {
